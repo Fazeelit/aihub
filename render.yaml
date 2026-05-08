@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: aihub-backend
+    runtime: node
+    buildCommand: yarn install
+    startCommand: yarn start
