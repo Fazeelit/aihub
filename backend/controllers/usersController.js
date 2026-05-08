@@ -1,13 +1,14 @@
 import User from "../model/usersModel.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import config from "../config/config.js";
 
 // Helper: Validate MongoDB ObjectId
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 const buildUserToken = (user) =>
   jwt.sign(
     { id: user._id, username: user.username, role: user.role },
-    process.env.JWT_SECRET,
+    config.jwtSecret,
     { expiresIn: process.env.JWT_EXPIRE_IN || "7d" }
   );
 
@@ -89,6 +90,14 @@ const SignUp = async (req, res) => {
     const normalizedUsername = username.trim();
     const normalizedEmail = email.trim().toLowerCase();
 
+    if (!normalizedUsername) {
+      return res.status(400).json({ message: "Username is required" });
+    }
+
+    if (!normalizedEmail) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
     if (await User.findOne({ username: normalizedUsername })) {
       return res.status(400).json({ message: "Username already exists" });
     }
@@ -118,7 +127,33 @@ const SignUp = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("Signup Error:", error);
+
+    if (error?.code === 11000) {
+      const duplicateField = Object.keys(error.keyPattern || {})[0];
+
+      if (duplicateField === "email") {
+        return res.status(409).json({ message: "Email already exists" });
+      }
+
+      if (duplicateField === "username") {
+        return res.status(409).json({ message: "Username already exists" });
+      }
+
+      return res.status(409).json({ message: "User already exists" });
+    }
+
+    if (error?.name === "ValidationError") {
+      const firstMessage = Object.values(error.errors || {})[0]?.message;
+      return res.status(400).json({
+        message: firstMessage || "Invalid signup data",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
   }
 };
 
