@@ -1,10 +1,16 @@
 import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const projectRoot = path.resolve(__dirname, "..");
 
 const envCandidates = [
-  path.resolve(".env"),
-  path.resolve("backend/.env"),
+  path.join(projectRoot, ".env"),
+  path.resolve(process.cwd(), ".env"),
+  path.resolve(process.cwd(), "backend/.env"),
 ];
 
 const resolvedEnvPath = envCandidates.find((candidate) => fs.existsSync(candidate));
