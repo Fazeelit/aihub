@@ -13,16 +13,24 @@ import adminRoutes from "./routes/adminroute.js";
 const app = express();
 
 // ------------------ CORS ------------------
-const allowedOrigins = ["http://localhost:3000"];
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173"
+];
 
 app.use(
   cors({
     origin: (origin, callback) => {
+      // allow mobile apps, postman, server-to-server
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-
-      if (origin.endsWith(".vercel.app")) return callback(null, true);
+      // allow local + vercel
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app")
+      ) {
+        return callback(null, true);
+      }
 
       return callback(null, false);
     },
@@ -32,14 +40,8 @@ app.use(
   })
 );
 
-// Preflight handler
-app.use((req, res, next) => {
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(204);
-  }
-
-  next();
-});
+// Preflight handler (safe version)
+app.options("*", cors());
 
 // ------------------ Middleware ------------------
 app.use(express.json());
@@ -48,7 +50,7 @@ app.use(morgan("dev"));
 
 // ------------------ Root ------------------
 app.get("/", (req, res) => {
-  res.send("Backend is running!");
+  res.json({ message: "Backend is running!" });
 });
 
 // ------------------ API Routes ------------------
@@ -62,26 +64,30 @@ app.all(/^\/api\/.*$/, (req, res) => {
 
 // ------------------ Error Handler ------------------
 app.use((err, req, res, next) => {
-  console.error("Error:", err);
-  res.status(500).json({ message: err.message || "Internal Server Error" });
+  console.error("🔥 Error:", err);
+  res.status(500).json({
+    message: err.message || "Internal Server Error",
+  });
 });
 
 // ------------------ Server ------------------
-const PORT = config.port || 8080;
+const PORT = process.env.PORT || config.port || 8080;
 const HOST = "0.0.0.0";
 
 const server = http.createServer(app);
-server.timeout = 5 * 60 * 1000;
+
+// safer timeout for Render
+server.timeout = 0;
 
 const startServer = async () => {
   try {
     await dbConnect();
 
     server.listen(PORT, HOST, () => {
-      console.log(`Server running at http://${HOST}:${PORT}`);
+      console.log(`🚀 Server running on http://${HOST}:${PORT}`);
     });
   } catch (error) {
-    console.error(error.message);
+    console.error("❌ DB Connection Error:", error.message);
     process.exit(1);
   }
 };
