@@ -2,8 +2,9 @@
   "name": "smartaihub-root",
   "private": true,
   "type": "module",
+  "packageManager": "npm@10",
   "scripts": {
     "start": "node index.js",
-    "postinstall": "yarn --cwd backend install"
+    "postinstall": "npm --prefix backend install"
   }
 }
