@@ -1,10 +1,7 @@
 import express from "express";
 import morgan from "morgan";
-import dotenv from "dotenv";
 import cors from "cors";
 import http from "http";
-
-dotenv.config();
 
 import dbConnect from "./config/database.js";
 import config from "./config/config.js";
@@ -12,9 +9,6 @@ import config from "./config/config.js";
 // ------------------ Routes ------------------
 import userRoutes from "./routes/usersroute.js";
 import adminRoutes from "./routes/adminroute.js";
-
-// ------------------ DB ------------------
-dbConnect();
 
 const app = express();
 
@@ -38,11 +32,12 @@ app.use(
   })
 );
 
-// ✅ Preflight handler (NO crash)
+// Preflight handler
 app.use((req, res, next) => {
   if (req.method === "OPTIONS") {
     return res.sendStatus(204);
   }
+
   next();
 });
 
@@ -53,13 +48,12 @@ app.use(morgan("dev"));
 
 // ------------------ Root ------------------
 app.get("/", (req, res) => {
-  res.send("✅ Backend is running!");
+  res.send("Backend is running!");
 });
 
 // ------------------ API Routes ------------------
 app.use("/api/users", userRoutes);
 app.use("/api/admins", adminRoutes);
-
 
 // ------------------ 404 API ------------------
 app.all(/^\/api\/.*$/, (req, res) => {
@@ -68,7 +62,7 @@ app.all(/^\/api\/.*$/, (req, res) => {
 
 // ------------------ Error Handler ------------------
 app.use((err, req, res, next) => {
-  console.error("⚠️ Error:", err);
+  console.error("Error:", err);
   res.status(500).json({ message: err.message || "Internal Server Error" });
 });
 
@@ -79,6 +73,17 @@ const HOST = "0.0.0.0";
 const server = http.createServer(app);
 server.timeout = 5 * 60 * 1000;
 
-server.listen(PORT, HOST, () => {
-  console.log(`🚀 Server running at http://${HOST}:${PORT}`);
-});
+const startServer = async () => {
+  try {
+    await dbConnect();
+
+    server.listen(PORT, HOST, () => {
+      console.log(`Server running at http://${HOST}:${PORT}`);
+    });
+  } catch (error) {
+    console.error(error.message);
+    process.exit(1);
+  }
+};
+
+startServer();

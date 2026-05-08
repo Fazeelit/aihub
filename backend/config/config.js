@@ -1,17 +1,21 @@
 import dotenv from "dotenv";
 import path from "path";
 
-// Load the main .env file (since you currently have only .env)
 dotenv.config({ path: path.resolve(".env") });
 
-console.log(`✅ Loaded environment variables from .env`);
+console.log("Loaded environment variables from .env");
 
 export default {
-  port: process.env.PORT || 3000,
-  host: process.env.HOST || "127.0.0.1",
+  port: process.env.PORT || 8000,
+  host: process.env.HOST || "0.0.0.0",
 
   // MongoDB
-  mongodbUri: process.env.MONGO_URI || "mongodb://localhost:27017/Darazdb",
+  mongodbUri: process.env.MONGO_URI || "",
+  mongodbUriDirect: process.env.MONGO_URI_DIRECT || "",
+  mongodbDnsServers: (process.env.MONGODB_DNS_SERVERS || "8.8.8.8,1.1.1.1")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean),
 
   // JWT
   jwtSecret: process.env.JWT_SECRET || "default_secret_key",
