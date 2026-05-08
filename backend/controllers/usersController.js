@@ -36,8 +36,10 @@ const LogIn = async (req, res) => {
     return res.status(400).json({ message: "Password is required and must be a string" });
 
   try {
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "Invalid email or password" });
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) return res.status(401).json({ message: "Invalid email or password" });
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) return res.status(401).json({ message: "Invalid email or password" });

@@ -40,8 +40,8 @@ app.use(
   })
 );
 
-// Preflight handler (safe version)
-app.options("*", cors());
+// Express 5 rejects bare "*" here, so use a regex wildcard instead.
+app.options(/.*/, cors());
 
 // ------------------ Middleware ------------------
 app.use(express.json());
