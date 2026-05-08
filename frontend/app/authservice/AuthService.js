@@ -4,7 +4,7 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 
 const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/api";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://aihub-594y.onrender.com/api";
 
 async function authRequest(
   endpoint,
