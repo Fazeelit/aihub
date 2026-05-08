@@ -1,9 +1,23 @@
 import dotenv from "dotenv";
 import path from "path";
+import fs from "fs";
 
-dotenv.config({ path: path.resolve(".env") });
+const envCandidates = [
+  path.resolve(".env"),
+  path.resolve("backend/.env"),
+];
 
-console.log("Loaded environment variables from .env");
+const resolvedEnvPath = envCandidates.find((candidate) => fs.existsSync(candidate));
+
+if (resolvedEnvPath) {
+  dotenv.config({ path: resolvedEnvPath });
+} else {
+  dotenv.config();
+}
+
+console.log(
+  `Loaded environment variables from ${resolvedEnvPath || "process environment"}`
+);
 
 export default {
   port: process.env.PORT || 8000,
