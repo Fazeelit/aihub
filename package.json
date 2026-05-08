@@ -2,7 +2,6 @@
   "name": "smartaihub-root",
   "private": true,
   "type": "module",
-  "packageManager": "npm@10",
   "scripts": {
     "start": "node index.js",
     "postinstall": "npm --prefix backend install"
